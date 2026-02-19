@@ -631,16 +631,116 @@ export default function App() {
                 <LockScreen title={`Gerência ${activeTenant.name}`} onUnlock={() => setIsLocked(false)} onCancel={handleLogout} expectedPin={activeTenant.managerPin} />
             ) : (
                 <div className="min-h-screen bg-gray-50 p-8 font-mono">
-                    {/* Manager Dashboard Content would go here */}
                     <div className="max-w-6xl mx-auto">
                         <div className="flex justify-between items-end mb-12">
                             <div>
                                 <h1 className="text-4xl font-black uppercase tracking-tighter">{activeTenant.name}</h1>
                                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-2">Dashboard de Gerência</p>
                             </div>
-                            <Button variant="ghost" onClick={handleLogout}><LogOut size={16} /> Sair</Button>
+                            <div className="flex gap-4">
+                                <Button variant="secondary" onClick={() => refreshTenantData(activeTenant.id)}><RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Atualizar</Button>
+                                <Button variant="ghost" onClick={handleLogout}><LogOut size={16} /> Sair</Button>
+                            </div>
                         </div>
-                        <p className="text-center py-20 text-gray-400 uppercase text-xs">Dashboard em desenvolvimento...</p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                            <div className="bg-white p-6 border border-gray-200">
+                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Total de Reviews</p>
+                                <p className="text-3xl font-black">{reviews.length}</p>
+                            </div>
+                            <div className="bg-white p-6 border border-gray-200">
+                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Média Geral</p>
+                                <p className="text-3xl font-black">
+                                    {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0'}
+                                </p>
+                            </div>
+                            <div className="bg-white p-6 border border-gray-200">
+                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Críticas Pendentes</p>
+                                <p className="text-3xl font-black text-red-600">{reviews.filter(r => r.status === 'pending_resolution').length}</p>
+                            </div>
+                            <div className="bg-white p-6 border border-gray-200">
+                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Garçons Ativos</p>
+                                <p className="text-3xl font-black">{waiters.filter(w => w.active).length}</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-2 space-y-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xs font-bold uppercase tracking-widest">Feedbacks Recentes</h2>
+                                    <div className="flex gap-2">
+                                        {['all', 'pending', 'resolved'].map((f) => (
+                                            <button key={f} onClick={() => setReviewFilter(f as any)} className={`px-3 py-1 text-[9px] font-bold uppercase border ${reviewFilter === f ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-200'}`}>{f}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {filteredReviews.length === 0 ? (
+                                    <div className="bg-white p-12 border border-gray-200 text-center">
+                                        <MessageSquare size={32} className="mx-auto text-gray-200 mb-4" />
+                                        <p className="text-[10px] text-gray-400 uppercase">Nenhum feedback encontrado.</p>
+                                    </div>
+                                ) : (
+                                    filteredReviews.map((r) => (
+                                        <div key={r.id} className="bg-white p-6 border border-gray-200 relative overflow-hidden">
+                                            {r.status === 'pending_resolution' && <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>}
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <p className="text-xs font-bold uppercase">{r.userInfo.name}</p>
+                                                    <p className="text-[9px] text-gray-400">{new Date(r.timestamp).toLocaleString()}</p>
+                                                </div>
+                                                <div className="flex items-center gap-1 bg-black text-white px-2 py-1">
+                                                    <Star size={10} fill="white" />
+                                                    <span className="text-[10px] font-bold">{r.rating}</span>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mb-4 italic">"{r.comment || 'Sem comentário.'}"</p>
+                                            <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+                                                <span className={`text-[9px] font-bold uppercase ${r.status === 'pending_resolution' ? 'text-red-600' : 'text-green-600'}`}>{r.status}</span>
+                                                {r.status === 'pending_resolution' && (
+                                                    <Button variant="secondary" className="py-2 px-4 text-[9px]" onClick={() => markResolved(r.id)}>Resolver</Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="bg-white p-8 border border-gray-200">
+                                    <h2 className="text-xs font-bold uppercase tracking-widest mb-6">Equipe de Garçons</h2>
+                                    <div className="flex gap-2 mb-6">
+                                        <Input placeholder="NOME DO GARÇOM" value={newWaiterName} onChange={(e: any) => setNewWaiterName(e.target.value)} />
+                                        <button onClick={handleAddWaiter} className="p-4 bg-black text-white hover:bg-gray-800"><Plus size={16} /></button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {waiterStats.map((w) => (
+                                            <div key={w.id} className="flex justify-between items-center p-3 border border-gray-100">
+                                                <div>
+                                                    <p className="text-[10px] font-bold uppercase">{w.name}</p>
+                                                    <p className="text-[9px] text-gray-400">{w.count} reviews • Média {w.avg}</p>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2 ${w.active ? 'text-green-600' : 'text-gray-300'}`}><Power size={14} /></button>
+                                                    <button onClick={() => deleteWaiter(w.id)} className="p-2 text-gray-300 hover:text-red-600"><Trash2 size={14} /></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="bg-white p-8 border border-gray-200">
+                                    <h2 className="text-xs font-bold uppercase tracking-widest mb-6">Configurações</h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[9px] font-bold text-gray-400 uppercase block mb-2">Link Google Reviews</label>
+                                            <Input value={settingsLink} onChange={(e: any) => setSettingsLink(e.target.value)} />
+                                        </div>
+                                        <Button onClick={handleSaveSettings} className="w-full py-3">Salvar Alterações</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )
