@@ -65,12 +65,12 @@ const Input = ({ value, onChange, placeholder, type = "text", maxLength }: any) 
   <input type={type} value={value} onChange={onChange} placeholder={placeholder} maxLength={maxLength} className="w-full py-4 bg-transparent border-b border-gray-300 focus:border-orange-600 focus:outline-none font-mono text-base placeholder:text-gray-400 transition-colors rounded-none mb-4 text-black" />
 );
 
-const ObservationInput = ({ value, onChange, placeholder, label = "OBSERVAÇÕES", height = "h-32" }: any) => (
+const ObservationInput = ({ value, onChange, placeholder, label = "OBSERVAÇÕES", height = "h-20" }: any) => (
   <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
-    <div className="flex items-center justify-between mb-2">
-       <label className="font-mono text-[10px] uppercase tracking-widest text-gray-500">{label}</label>
+    <div className="flex items-center justify-between mb-1">
+       <label className="font-mono text-[9px] uppercase tracking-widest text-gray-500">{label}</label>
     </div>
-    <textarea value={value} onChange={onChange} placeholder={placeholder} className={`w-full ${height} bg-transparent py-2 border-b border-gray-300 focus:border-orange-600 focus:outline-none font-mono text-lg leading-relaxed text-black placeholder:text-gray-400 resize-none transition-colors`}/>
+    <textarea value={value} onChange={onChange} placeholder={placeholder} className={`w-full ${height} bg-transparent py-1 border-b border-gray-300 focus:border-orange-600 focus:outline-none font-mono text-sm leading-relaxed text-black placeholder:text-gray-400 resize-none transition-colors`}/>
   </div>
 );
 
@@ -88,8 +88,8 @@ const SingleRating = ({ value, onChange }: { value: number, onChange: (val: numb
 };
 
 const StepLayout = ({ stepLabel, question, description, children, onBack, onNext, nextLabel = "PRÓXIMO", canProceed = true, hideNext = false, restaurantName }: any) => (
-  <div className="min-h-screen flex flex-col max-w-xl mx-auto px-6 py-8 fade-in bg-white text-black font-mono">
-    <div className="flex justify-between items-end mb-12 pt-12">
+  <div className="h-[100dvh] flex flex-col max-w-xl mx-auto px-6 py-4 fade-in bg-white text-black font-mono overflow-hidden">
+    <div className="flex justify-between items-center mb-4 pt-8">
       <div className="flex items-center gap-4">
         {onBack ? <button onClick={onBack} className="hover:opacity-50 transition-opacity"><ChevronLeft size={20} strokeWidth={1.5} className="text-black" /></button> : <div className="w-5" />}
         <span className="text-[10px] font-medium tracking-widest text-gray-500">{stepLabel}</span>
@@ -98,12 +98,12 @@ const StepLayout = ({ stepLabel, question, description, children, onBack, onNext
         <div className="text-[10px] font-bold tracking-widest uppercase text-gray-500">{restaurantName}</div>
       </div>
     </div>
-    <div className="flex-1 flex flex-col justify-center pb-20">
-      <h2 className="font-sans text-3xl sm:text-4xl font-black uppercase tracking-tighter mb-4 text-black leading-none">{question}</h2>
-      {description && <p className="font-mono text-xs sm:text-sm text-gray-500 mb-8 leading-relaxed max-w-md">{description}</p>}
+    <div className="flex-1 flex flex-col justify-center overflow-y-auto pb-4">
+      <h2 className="font-sans text-2xl sm:text-3xl font-black uppercase tracking-tighter mb-2 text-black leading-tight">{question}</h2>
+      {description && <p className="font-mono text-[10px] sm:text-xs text-gray-500 mb-4 leading-relaxed max-w-md">{description}</p>}
       <div className="w-full">{children}</div>
     </div>
-    {!hideNext && <div className="mt-auto"><Button onClick={onNext} disabled={!canProceed} className="w-full">{nextLabel} <ArrowRight size={16} /></Button></div>}
+    {!hideNext && <div className="pb-6"><Button onClick={onNext} disabled={!canProceed} className="w-full py-3">{nextLabel} <ArrowRight size={16} /></Button></div>}
   </div>
 );
 
