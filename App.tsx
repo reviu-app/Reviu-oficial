@@ -87,23 +87,29 @@ const SingleRating = ({ value, onChange }: { value: number, onChange: (val: numb
   );
 };
 
-const StepLayout = ({ stepLabel, question, description, children, onBack, onNext, nextLabel = "PRÓXIMO", canProceed = true, hideNext = false, restaurantName }: any) => (
+const StepLayout = ({ stepLabel, question, description, children, onBack, onNext, nextLabel = "PRÓXIMO", canProceed = true, hideNext = false, restaurantName, waiterName }: any) => (
   <div className="h-[100dvh] flex flex-col max-w-xl mx-auto px-6 py-4 fade-in bg-white text-black font-mono overflow-hidden">
-    <div className="flex justify-between items-center mb-4 pt-8">
+    <div className="flex justify-between items-center mb-6 pt-8 border-b border-gray-100 pb-4">
       <div className="flex items-center gap-4">
         {onBack ? <button onClick={onBack} className="hover:opacity-50 transition-opacity"><ChevronLeft size={20} strokeWidth={1.5} className="text-black" /></button> : <div className="w-5" />}
-        <span className="text-[10px] font-medium tracking-widest text-gray-500">{stepLabel}</span>
+        <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">{stepLabel}</span>
       </div>
       <div className="text-right">
-        <div className="text-[10px] font-bold tracking-widest uppercase text-gray-500">{restaurantName}</div>
+        <div className="text-sm font-black tracking-tighter uppercase text-black">{restaurantName}</div>
       </div>
     </div>
     <div className="flex-1 flex flex-col justify-center overflow-y-auto pb-4">
-      <h2 className="font-sans text-2xl sm:text-3xl font-black uppercase tracking-tighter mb-2 text-black leading-tight">{question}</h2>
-      {description && <p className="font-mono text-[10px] sm:text-xs text-gray-500 mb-4 leading-relaxed max-w-md">{description}</p>}
+      {waiterName && (
+        <div className="mb-4 inline-flex items-center gap-2 bg-gray-50 px-3 py-1.5 border border-gray-200 rounded-full w-fit">
+          <Users size={12} className="text-gray-400" />
+          <span className="text-[10px] font-bold uppercase text-gray-600">Atendido por {waiterName}</span>
+        </div>
+      )}
+      <h2 className="font-sans text-3xl sm:text-4xl font-black uppercase tracking-tighter mb-3 text-black leading-none">{question}</h2>
+      {description && <p className="font-mono text-xs text-gray-500 mb-6 leading-relaxed max-w-md">{description}</p>}
       <div className="w-full">{children}</div>
     </div>
-    {!hideNext && <div className="pb-6"><Button onClick={onNext} disabled={!canProceed} className="w-full py-3">{nextLabel} <ArrowRight size={16} /></Button></div>}
+    {!hideNext && <div className="pb-6"><Button onClick={onNext} disabled={!canProceed} className="w-full py-4 text-sm">{nextLabel} <ArrowRight size={18} /></Button></div>}
   </div>
 );
 
@@ -166,6 +172,9 @@ const SystemMenu = ({ onNavigate, currentMode }: any) => {
       onNavigate(target);
       setIsOpen(false);
   };
+
+  // Hide menu for customers (Wizard mode)
+  if (currentMode === 'tenant_wizard') return null;
 
   return (
     <>
@@ -682,21 +691,26 @@ export default function App() {
                                     </div>
                                 ) : (
                                     filteredReviews.map((r) => (
-                                        <div key={r.id} className="bg-white p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden rounded-sm">
+                                        <div key={r.id} className="bg-white p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden rounded-sm">
                                             {r.status === 'pending_resolution' && <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>}
                                             
                                             <div className="flex justify-between items-start mb-4">
-                                                <div className="space-y-1">
-                                                    <h3 className="text-sm font-black uppercase tracking-tight text-black">{r.userInfo.name}</h3>
-                                                    <div className="flex flex-wrap gap-3">
-                                                        <span className="flex items-center gap-1 text-[10px] text-gray-500 font-medium"><Mail size={10} /> {r.userInfo.email}</span>
-                                                        {r.contactInfo && <span className="flex items-center gap-1 text-[10px] text-gray-500 font-medium"><MessageSquare size={10} /> {r.contactInfo}</span>}
-                                                        <span className="flex items-center gap-1 text-[10px] text-gray-400"><Timer size={10} /> {new Date(r.timestamp).toLocaleString('pt-BR')}</span>
+                                                <div className="space-y-2 flex-1">
+                                                    <div className="bg-gray-900 text-white p-3 rounded-sm inline-block w-full sm:w-auto">
+                                                        <h3 className="text-base font-black uppercase tracking-tight leading-none mb-2">{r.userInfo.name}</h3>
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="flex items-center gap-2 text-[11px] font-bold opacity-90"><Mail size={12} className="text-orange-400" /> {r.userInfo.email}</span>
+                                                            {r.contactInfo && <span className="flex items-center gap-2 text-[11px] font-bold opacity-90"><MessageSquare size={12} className="text-orange-400" /> {r.contactInfo}</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                                        <span className="flex items-center gap-1"><Timer size={10} /> {new Date(r.timestamp).toLocaleString('pt-BR')}</span>
+                                                        {r.waiterId && <span className="flex items-center gap-1 text-orange-600"><Users size={10} /> Garçom: {waiters.find(w => w.id === r.waiterId)?.name || 'N/A'}</span>}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 bg-black text-white px-3 py-1.5 rounded-full">
-                                                    <Star size={12} fill="currentColor" className="text-yellow-400" />
-                                                    <span className="text-xs font-black">{r.rating.toFixed(1)}</span>
+                                                <div className="flex items-center gap-1.5 bg-black text-white px-3 py-2 rounded-sm ml-4">
+                                                    <Star size={14} fill="currentColor" className="text-yellow-400" />
+                                                    <span className="text-sm font-black">{r.rating.toFixed(1)}</span>
                                                 </div>
                                             </div>
 
@@ -780,7 +794,15 @@ export default function App() {
         {appMode === 'tenant_wizard' && activeTenant && (
             <>
             {currentStepIndex === 0 && (
-                <StepLayout stepLabel="IDENTIFICAÇÃO" question={`BEM-VINDO AO ${activeTenant.name}`} description="PARA COMEÇAR, QUEM ESTÁ NOS VISITANDO HOJE?" canProceed={!!userInfo.name && !!userInfo.email} onNext={handleNext} restaurantName={activeTenant.name}>
+                <StepLayout 
+                    stepLabel="IDENTIFICAÇÃO" 
+                    question={selectedWaiter ? `Olá! Você foi atendido por ${selectedWaiter.name}.` : `Bem-vindo ao ${activeTenant.name}`} 
+                    description={selectedWaiter ? "Como foi sua experiência hoje? Conte-nos um pouco sobre você para começar." : "Sua opinião é fundamental para nossa evolução. Quem está nos visitando hoje?"} 
+                    canProceed={!!userInfo.name && !!userInfo.email} 
+                    onNext={handleNext} 
+                    restaurantName={activeTenant.name}
+                    waiterName={selectedWaiter?.name}
+                >
                 <div className="space-y-4">
                     <Input placeholder="SEU NOME" value={userInfo.name} onChange={(e: any) => setUserInfo({...userInfo, name: e.target.value})} />
                     <Input placeholder="SEU E-MAIL" type="email" value={userInfo.email} onChange={(e: any) => setUserInfo({...userInfo, email: e.target.value})} />
@@ -796,7 +818,16 @@ export default function App() {
                 </StepLayout>
             )}
             {currentStepIndex >= 1 && currentStepIndex <= 4 && (
-                <StepLayout stepLabel={RATING_STEPS[currentStepIndex-1].label} question={RATING_STEPS[currentStepIndex-1].question} description="SUA OPINIÃO É FUNDAMENTAL PARA NOSSA EVOLUÇÃO." canProceed={ratings[RATING_STEPS[currentStepIndex-1].key] > 0} onBack={handleBack} onNext={handleNext} restaurantName={activeTenant.name}>
+                <StepLayout 
+                    stepLabel={RATING_STEPS[currentStepIndex-1].label} 
+                    question={RATING_STEPS[currentStepIndex-1].question} 
+                    description="SUA OPINIÃO É FUNDAMENTAL PARA NOSSA EVOLUÇÃO." 
+                    canProceed={ratings[RATING_STEPS[currentStepIndex-1].key] > 0} 
+                    onBack={handleBack} 
+                    onNext={handleNext} 
+                    restaurantName={activeTenant.name}
+                    waiterName={selectedWaiter?.name}
+                >
                 <SingleRating value={ratings[RATING_STEPS[currentStepIndex-1].key]} onChange={(val) => setRatings({...ratings, [RATING_STEPS[currentStepIndex-1].key]: val})} />
                 <ObservationInput value={categoryComments[RATING_STEPS[currentStepIndex-1].key]} onChange={(e: any) => setCategoryComments({...categoryComments, [RATING_STEPS[currentStepIndex-1].key]: e.target.value})} placeholder="Algo específico que queira destacar?" />
                 </StepLayout>
@@ -850,7 +881,16 @@ export default function App() {
                 </div>
             )}
             {currentStepIndex === 6 && (
-                <StepLayout stepLabel="DIAGNÓSTICO" question="QUAL O PRINCIPAL MOTIVO?" description="SELECIONE PARA NOS AJUDAR A MELHORAR." canProceed={!!details.category} onBack={handleBack} onNext={() => setCurrentStepIndex(7)} restaurantName={activeTenant.name}>
+                <StepLayout 
+                    stepLabel="DIAGNÓSTICO" 
+                    question="QUAL O PRINCIPAL MOTIVO?" 
+                    description="SELECIONE PARA NOS AJUDAR A MELHORAR." 
+                    canProceed={!!details.category} 
+                    onBack={handleBack} 
+                    onNext={() => setCurrentStepIndex(7)} 
+                    restaurantName={activeTenant.name}
+                    waiterName={selectedWaiter?.name}
+                >
                 <div className="flex flex-col gap-2 pt-4">
                     {COMPLAINT_CATEGORIES.map((cat) => {
                     const isSelected = details.category === cat.id;
