@@ -682,23 +682,42 @@ export default function App() {
                                     </div>
                                 ) : (
                                     filteredReviews.map((r) => (
-                                        <div key={r.id} className="bg-white p-6 border border-gray-200 relative overflow-hidden">
-                                            {r.status === 'pending_resolution' && <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>}
+                                        <div key={r.id} className="bg-white p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden rounded-sm">
+                                            {r.status === 'pending_resolution' && <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>}
+                                            
                                             <div className="flex justify-between items-start mb-4">
-                                                <div>
-                                                    <p className="text-xs font-bold uppercase">{r.userInfo.name}</p>
-                                                    <p className="text-[9px] text-gray-400">{new Date(r.timestamp).toLocaleString()}</p>
+                                                <div className="space-y-1">
+                                                    <h3 className="text-sm font-black uppercase tracking-tight text-black">{r.userInfo.name}</h3>
+                                                    <div className="flex flex-wrap gap-3">
+                                                        <span className="flex items-center gap-1 text-[10px] text-gray-500 font-medium"><Mail size={10} /> {r.userInfo.email}</span>
+                                                        {r.contactInfo && <span className="flex items-center gap-1 text-[10px] text-gray-500 font-medium"><MessageSquare size={10} /> {r.contactInfo}</span>}
+                                                        <span className="flex items-center gap-1 text-[10px] text-gray-400"><Timer size={10} /> {new Date(r.timestamp).toLocaleString('pt-BR')}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-1 bg-black text-white px-2 py-1">
-                                                    <Star size={10} fill="white" />
-                                                    <span className="text-[10px] font-bold">{r.rating}</span>
+                                                <div className="flex items-center gap-1.5 bg-black text-white px-3 py-1.5 rounded-full">
+                                                    <Star size={12} fill="currentColor" className="text-yellow-400" />
+                                                    <span className="text-xs font-black">{r.rating.toFixed(1)}</span>
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-gray-600 mb-4 italic">"{r.comment || 'Sem comentário.'}"</p>
-                                            <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                                                <span className={`text-[9px] font-bold uppercase ${r.status === 'pending_resolution' ? 'text-red-600' : 'text-green-600'}`}>{r.status}</span>
+
+                                            <div className="bg-gray-50 p-4 mb-4 border-l-2 border-gray-200">
+                                                <p className="text-xs text-gray-700 leading-relaxed font-medium italic">"{r.comment || 'O cliente não deixou um comentário por escrito.'}"</p>
+                                            </div>
+
+                                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                                                <div className="flex gap-2">
+                                                    <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded ${r.status === 'pending_resolution' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                                        {r.status === 'pending_resolution' ? 'Ação Necessária' : 'Finalizado'}
+                                                    </span>
+                                                    {r.category && <span className="px-2 py-1 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded">{r.category}</span>}
+                                                </div>
                                                 {r.status === 'pending_resolution' && (
-                                                    <Button variant="secondary" className="py-2 px-4 text-[9px]" onClick={() => markResolved(r.id)}>Resolver</Button>
+                                                    <button 
+                                                        onClick={() => markResolved(r.id)}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors rounded-sm"
+                                                    >
+                                                        <CheckSquare size={12} /> Marcar como Resolvido
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
