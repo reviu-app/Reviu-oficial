@@ -12,18 +12,18 @@ const SYSADMIN_HASH = "MjAyNA==";
 const AGE_RANGES = ["-18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"];
 
 const RATING_STEPS = [
-  { key: 'food', label: 'GASTRONOMIA', question: 'A QUALIDADE, SABOR E APRESENTAÇÃO DOS PRATOS SURPREENDERAM?' },
-  { key: 'service', label: 'ATENDIMENTO', question: 'A EQUIPE DEMONSTROU CORTESIA, AGILIDADE E CONHECIMENTO TÉCNICO?' },
-  { key: 'ambiance', label: 'AMBIENTE', question: 'A ILUMINAÇÃO, TEMPERATURA E DECORAÇÃO CRIARAM O CLIMA IDEAL?' },
-  { key: 'music', label: 'MÚSICA / SOM', question: 'A SELEÇÃO MUSICAL E O VOLUME ESTAVAM CONFORTÁVEIS PARA CONVERSAR?' },
+  { key: 'food', label: 'Gastronomia', question: 'A qualidade, sabor e apresentação dos pratos surpreenderam?' },
+  { key: 'service', label: 'Atendimento', question: 'A equipe demonstrou cortesia, agilidade e conhecimento técnico?' },
+  { key: 'ambiance', label: 'Ambiente', question: 'A iluminação, temperatura e decoração criaram o clima ideal?' },
+  { key: 'music', label: 'Música / Som', question: 'A seleção musical e o volume estavam confortáveis para conversar?' },
 ];
 
 const COMPLAINT_CATEGORIES = [
-  { id: 'qualidade', label: 'QUALIDADE DO PRODUTO' },
-  { id: 'demora', label: 'DEMORA NO PEDIDO' },
-  { id: 'atendimento', label: 'POSTURA DA EQUIPE' },
-  { id: 'ambiente', label: 'LIMPEZA / CONFORTO' },
-  { id: 'outros', label: 'OUTROS MOTIVOS' },
+  { id: 'qualidade', label: 'Qualidade do produto' },
+  { id: 'demora', label: 'Demora no pedido' },
+  { id: 'atendimento', label: 'Postura da equipe' },
+  { id: 'ambiente', label: 'Limpeza / Conforto' },
+  { id: 'outros', label: 'Outros motivos' },
 ];
 
 // --- COMPONENTS ---
@@ -105,8 +105,8 @@ const StepLayout = ({ stepLabel, question, description, children, onBack, onNext
           <span className="text-[10px] font-bold uppercase text-gray-600">Atendido por {waiterName}</span>
         </div>
       )}
-      <h2 className="font-sans text-2xl sm:text-3xl font-bold uppercase tracking-tight mb-3 text-gray-900 leading-tight">{question}</h2>
-      {description && <p className="font-mono text-[11px] text-gray-400 mb-8 leading-relaxed max-w-md uppercase tracking-wider">{description}</p>}
+      <h2 className="font-sans text-2xl sm:text-3xl font-semibold tracking-tight mb-3 text-gray-900 leading-tight">{question}</h2>
+      {description && <p className="font-sans text-sm text-gray-500 mb-8 leading-relaxed max-w-md">{description}</p>}
       <div className="w-full">{children}</div>
     </div>
     {!hideNext && <div className="pb-6"><Button onClick={onNext} disabled={!canProceed} className="w-full py-4 text-sm">{nextLabel} <ArrowRight size={18} /></Button></div>}
@@ -749,29 +749,37 @@ export default function App() {
                                     </div>
                                     <div className="space-y-3">
                                         {waiterStats.map((w) => (
-                                            <div key={w.id} className="group border border-gray-100 rounded-sm overflow-hidden">
-                                                <div className="flex justify-between items-center p-3 bg-white">
-                                                    <div className="cursor-pointer flex-1" onClick={() => setSelectedWaiterForHistory(selectedWaiterForHistory === w.id ? null : w.id)}>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-[10px] font-bold uppercase text-black">{w.name}</p>
-                                                            <span className={`w-1.5 h-1.5 rounded-full ${w.active ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                            <div key={w.id} className={`group border rounded-md overflow-hidden transition-all ${selectedWaiterForHistory === w.id ? 'border-black ring-1 ring-black' : 'border-gray-100 hover:border-gray-300'}`}>
+                                                <div 
+                                                    className="flex justify-between items-center p-4 bg-white cursor-pointer active:bg-gray-50"
+                                                    onClick={() => setSelectedWaiterForHistory(selectedWaiterForHistory === w.id ? null : w.id)}
+                                                >
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <p className="text-xs font-bold uppercase text-black tracking-tight">{w.name}</p>
+                                                            <span className={`w-2 h-2 rounded-full ${w.active ? 'bg-green-500' : 'bg-gray-300'}`}></span>
                                                         </div>
-                                                        <p className="text-[9px] text-gray-400 font-medium">{w.count} avaliações • <span className="text-black font-bold">Média {w.avg}</span></p>
+                                                        <div className="flex items-center gap-3">
+                                                            <p className="text-[10px] text-gray-500 font-medium">{w.count} avaliações</p>
+                                                            <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[10px] font-black text-black">
+                                                                <Star size={10} fill="black" /> {w.avg}
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex gap-1">
+                                                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                                                         <button 
                                                             onClick={() => {
                                                                 const url = `${window.location.origin}?t=${activeTenant.id}&wtr=${w.id}`;
                                                                 const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
                                                                 window.open(qrUrl, '_blank');
                                                             }} 
-                                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                                                            className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                                                             title="Gerar QR Code"
                                                         >
-                                                            <QrCode size={14} />
+                                                            <QrCode size={16} />
                                                         </button>
-                                                        <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2 ${w.active ? 'text-green-600' : 'text-gray-300'}`}><Power size={14} /></button>
-                                                        <button onClick={() => deleteWaiter(w.id)} className="p-2 text-gray-300 hover:text-red-600"><Trash2 size={14} /></button>
+                                                        <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2.5 rounded-full transition-colors ${w.active ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 hover:bg-gray-50'}`}><Power size={16} /></button>
+                                                        <button onClick={() => deleteWaiter(w.id)} className="p-2.5 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"><Trash2 size={16} /></button>
                                                     </div>
                                                 </div>
                                                 
