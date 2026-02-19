@@ -105,8 +105,8 @@ const StepLayout = ({ stepLabel, question, description, children, onBack, onNext
           <span className="text-[10px] font-bold uppercase text-gray-600">Atendido por {waiterName}</span>
         </div>
       )}
-      <h2 className="font-sans text-3xl sm:text-4xl font-black uppercase tracking-tighter mb-3 text-black leading-none">{question}</h2>
-      {description && <p className="font-mono text-xs text-gray-500 mb-6 leading-relaxed max-w-md">{description}</p>}
+      <h2 className="font-sans text-2xl sm:text-3xl font-bold uppercase tracking-tight mb-3 text-gray-900 leading-tight">{question}</h2>
+      {description && <p className="font-mono text-[11px] text-gray-400 mb-8 leading-relaxed max-w-md uppercase tracking-wider">{description}</p>}
       <div className="w-full">{children}</div>
     </div>
     {!hideNext && <div className="pb-6"><Button onClick={onNext} disabled={!canProceed} className="w-full py-4 text-sm">{nextLabel} <ArrowRight size={18} /></Button></div>}
@@ -333,7 +333,8 @@ export default function App() {
   const [appMode, setAppMode] = useState<ViewState>('landing');
   const [isLocked, setIsLocked] = useState(true);
   const [isLoadingApp, setIsLoadingApp] = useState(true);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedWaiterForHistory, setSelectedWaiterForHistory] = useState<string | null>(null);
   const [activeTenant, setActiveTenant] = useState<Tenant | null>(null);
   const [isTenantSelectorOpen, setIsTenantSelectorOpen] = useState(false);
   const [pendingMode, setPendingMode] = useState<'manager' | 'customer' | null>(null);
@@ -583,7 +584,7 @@ export default function App() {
       const waiterReviews = reviews.filter(r => r.waiterId === w.id);
       const totalStars = waiterReviews.reduce((acc, r) => acc + r.rating, 0);
       const avg = waiterReviews.length > 0 ? (totalStars / waiterReviews.length).toFixed(1) : 'N/A';
-      return { ...w, avg, count: waiterReviews.length };
+      return { ...w, avg, count: waiterReviews.length, reviews: waiterReviews };
     });
   }, [waiters, reviews]);
 
@@ -748,26 +749,53 @@ export default function App() {
                                     </div>
                                     <div className="space-y-3">
                                         {waiterStats.map((w) => (
-                                            <div key={w.id} className="flex justify-between items-center p-3 border border-gray-100">
-                                                <div>
-                                                    <p className="text-[10px] font-bold uppercase">{w.name}</p>
-                                                    <p className="text-[9px] text-gray-400">{w.count} reviews • Média {w.avg}</p>
+                                            <div key={w.id} className="group border border-gray-100 rounded-sm overflow-hidden">
+                                                <div className="flex justify-between items-center p-3 bg-white">
+                                                    <div className="cursor-pointer flex-1" onClick={() => setSelectedWaiterForHistory(selectedWaiterForHistory === w.id ? null : w.id)}>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-[10px] font-bold uppercase text-black">{w.name}</p>
+                                                            <span className={`w-1.5 h-1.5 rounded-full ${w.active ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                                        </div>
+                                                        <p className="text-[9px] text-gray-400 font-medium">{w.count} avaliações • <span className="text-black font-bold">Média {w.avg}</span></p>
+                                                    </div>
+                                                    <div className="flex gap-1">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const url = `${window.location.origin}?t=${activeTenant.id}&wtr=${w.id}`;
+                                                                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+                                                                window.open(qrUrl, '_blank');
+                                                            }} 
+                                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                                                            title="Gerar QR Code"
+                                                        >
+                                                            <QrCode size={14} />
+                                                        </button>
+                                                        <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2 ${w.active ? 'text-green-600' : 'text-gray-300'}`}><Power size={14} /></button>
+                                                        <button onClick={() => deleteWaiter(w.id)} className="p-2 text-gray-300 hover:text-red-600"><Trash2 size={14} /></button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex gap-1">
-                                                    <button 
-                                                        onClick={() => {
-                                                            const url = `${window.location.origin}?t=${activeTenant.id}&wtr=${w.id}`;
-                                                            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
-                                                            window.open(qrUrl, '_blank');
-                                                        }} 
-                                                        className="p-2 text-blue-600 hover:bg-blue-50"
-                                                        title="Gerar QR Code"
-                                                    >
-                                                        <QrCode size={14} />
-                                                    </button>
-                                                    <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2 ${w.active ? 'text-green-600' : 'text-gray-300'}`}><Power size={14} /></button>
-                                                    <button onClick={() => deleteWaiter(w.id)} className="p-2 text-gray-300 hover:text-red-600"><Trash2 size={14} /></button>
-                                                </div>
+                                                
+                                                {selectedWaiterForHistory === w.id && (
+                                                    <div className="bg-gray-50 p-3 border-t border-gray-100 max-h-48 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
+                                                        <p className="text-[8px] font-black text-gray-400 uppercase mb-2 tracking-widest">Histórico Recente</p>
+                                                        {w.reviews.length === 0 ? (
+                                                            <p className="text-[9px] text-gray-400 italic">Nenhuma avaliação ainda.</p>
+                                                        ) : (
+                                                            w.reviews.map((rev: any) => (
+                                                                <div key={rev.id} className="mb-2 pb-2 border-b border-gray-200 last:border-0">
+                                                                    <div className="flex justify-between items-center mb-1">
+                                                                        <span className="text-[9px] font-bold text-gray-700">{rev.userInfo.name}</span>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <Star size={8} fill="black" />
+                                                                            <span className="text-[9px] font-black">{rev.rating}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    {rev.comment && <p className="text-[9px] text-gray-500 leading-tight italic">"{rev.comment}"</p>}
+                                                                </div>
+                                                            ))
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
