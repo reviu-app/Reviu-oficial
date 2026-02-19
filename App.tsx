@@ -721,6 +721,17 @@ export default function App() {
                                                     <p className="text-[9px] text-gray-400">{w.count} reviews • Média {w.avg}</p>
                                                 </div>
                                                 <div className="flex gap-1">
+                                                    <button 
+                                                        onClick={() => {
+                                                            const url = `${window.location.origin}?t=${activeTenant.id}&wtr=${w.id}`;
+                                                            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+                                                            window.open(qrUrl, '_blank');
+                                                        }} 
+                                                        className="p-2 text-blue-600 hover:bg-blue-50"
+                                                        title="Gerar QR Code"
+                                                    >
+                                                        <QrCode size={14} />
+                                                    </button>
                                                     <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2 ${w.active ? 'text-green-600' : 'text-gray-300'}`}><Power size={14} /></button>
                                                     <button onClick={() => deleteWaiter(w.id)} className="p-2 text-gray-300 hover:text-red-600"><Trash2 size={14} /></button>
                                                 </div>
