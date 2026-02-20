@@ -352,7 +352,6 @@ export default function App() {
   // Manager State
   const [reviews, setReviews] = useState<Review[]>([]);
   const [waiters, setWaiters] = useState<Waiter[]>([]);
-  const [loading, setLoading] = useState(false);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'pending' | 'resolved'>('all');
   const [newWaiterName, setNewWaiterName] = useState('');
   const [settingsLink, setSettingsLink] = useState('');
