@@ -335,6 +335,7 @@ export default function App() {
   const [isLoadingApp, setIsLoadingApp] = useState(true);
   const [loading, setLoading] = useState(false);
   const [selectedWaiterForHistory, setSelectedWaiterForHistory] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'reputation' | 'settings'>('overview');
   const [activeTenant, setActiveTenant] = useState<Tenant | null>(null);
   const [isTenantSelectorOpen, setIsTenantSelectorOpen] = useState(false);
   const [pendingMode, setPendingMode] = useState<'manager' | 'customer' | null>(null);
@@ -640,165 +641,143 @@ export default function App() {
             isLocked ? (
                 <LockScreen title={`Gerência ${activeTenant.name}`} onUnlock={() => setIsLocked(false)} onCancel={handleLogout} expectedPin={activeTenant.managerPin} />
             ) : (
-                <div className="min-h-screen bg-gray-50 p-8 font-mono">
+                <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-mono">
                     <div className="max-w-6xl mx-auto">
-                        <div className="flex justify-between items-end mb-12">
+                        <div className="flex justify-between items-center mb-8">
                             <div>
-                                <h1 className="text-4xl font-black uppercase tracking-tighter">{activeTenant.name}</h1>
-                                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-2">Dashboard de Gerência</p>
+                                <h1 className="text-3xl font-black uppercase tracking-tighter text-black leading-none mb-1">{activeTenant.name}</h1>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Painel de Gestão Estratégica</p>
                             </div>
-                            <div className="flex gap-4">
-                                <Button variant="secondary" onClick={() => refreshTenantData(activeTenant.id)}><RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Atualizar</Button>
-                                <Button variant="ghost" onClick={handleLogout}><LogOut size={16} /> Sair</Button>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-                            <div className="bg-white p-6 border border-gray-200">
-                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Total de Reviews</p>
-                                <p className="text-3xl font-black">{reviews.length}</p>
-                            </div>
-                            <div className="bg-white p-6 border border-gray-200">
-                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Média Geral</p>
-                                <p className="text-3xl font-black">
-                                    {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0'}
-                                </p>
-                            </div>
-                            <div className="bg-white p-6 border border-gray-200">
-                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Críticas Pendentes</p>
-                                <p className="text-3xl font-black text-red-600">{reviews.filter(r => r.status === 'pending_resolution').length}</p>
-                            </div>
-                            <div className="bg-white p-6 border border-gray-200">
-                                <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Garçons Ativos</p>
-                                <p className="text-3xl font-black">{waiters.filter(w => w.active).length}</p>
+                            <div className="flex gap-2">
+                                <button onClick={() => refreshTenantData(activeTenant.id)} className="p-2.5 bg-gray-100 text-black hover:bg-black hover:text-white transition-all rounded-full"><RefreshCw size={18} className={loading ? 'animate-spin' : ''} /></button>
+                                <button onClick={handleLogout} className="p-2.5 bg-gray-100 text-black hover:bg-black hover:text-white transition-all rounded-full"><LogOut size={18} /></button>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="lg:col-span-2 space-y-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xs font-bold uppercase tracking-widest">Feedbacks Recentes</h2>
-                                    <div className="flex gap-2">
-                                        {['all', 'pending', 'resolved'].map((f) => (
-                                            <button key={f} onClick={() => setReviewFilter(f as any)} className={`px-3 py-1 text-[9px] font-bold uppercase border ${reviewFilter === f ? 'bg-black text-white border-black' : 'text-gray-400 border-gray-200'}`}>{f}</button>
-                                        ))}
+                        {/* Tabs Navigation */}
+                        <div className="flex border-b border-gray-200 mb-8 overflow-x-auto no-scrollbar">
+                            <button onClick={() => setActiveTab('overview')} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${activeTab === 'overview' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}>Visão Geral</button>
+                            <button onClick={() => setActiveTab('team')} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${activeTab === 'team' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}>Equipe</button>
+                            <button onClick={() => setActiveTab('reputation')} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${activeTab === 'reputation' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}>Reputação</button>
+                            <button onClick={() => setActiveTab('settings')} className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${activeTab === 'settings' ? 'border-black text-black' : 'border-transparent text-gray-400'}`}>Ajustes</button>
+                        </div>
+
+                        {/* Tab Content: Overview */}
+                        {activeTab === 'overview' && (
+                            <div className="space-y-6 animate-in fade-in duration-300">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                    <div className="bg-black text-white p-4 rounded-sm">
+                                        <p className="text-[8px] font-bold uppercase opacity-50 mb-1">Média Total</p>
+                                        <p className="text-2xl font-black">{(reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)).toFixed(1)}</p>
+                                    </div>
+                                    <div className="bg-white border border-gray-200 p-4 rounded-sm">
+                                        <p className="text-[8px] font-bold uppercase text-gray-400 mb-1">Total Reviews</p>
+                                        <p className="text-2xl font-black text-black">{reviews.length}</p>
+                                    </div>
+                                    <div className="bg-white border border-gray-200 p-4 rounded-sm">
+                                        <p className="text-[8px] font-bold uppercase text-gray-400 mb-1">Críticos</p>
+                                        <p className="text-2xl font-black text-red-600">{reviews.filter(r => r.status === 'pending_resolution').length}</p>
+                                    </div>
+                                    <div className="bg-white border border-gray-200 p-4 rounded-sm">
+                                        <p className="text-[8px] font-bold uppercase text-gray-400 mb-1">Garçons</p>
+                                        <p className="text-2xl font-black text-black">{waiters.length}</p>
                                     </div>
                                 </div>
-                                
-                                {filteredReviews.length === 0 ? (
-                                    <div className="bg-white p-12 border border-gray-200 text-center">
-                                        <MessageSquare size={32} className="mx-auto text-gray-200 mb-4" />
-                                        <p className="text-[10px] text-gray-400 uppercase">Nenhum feedback encontrado.</p>
+
+                                <div className="bg-white p-6 border border-gray-200">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-[10px] font-black uppercase tracking-widest">Feedbacks Recentes</h2>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => setReviewFilter('all')} className={`px-2 py-1 text-[8px] font-black uppercase border ${reviewFilter === 'all' ? 'bg-black text-white border-black' : 'bg-white text-gray-400 border-gray-100'}`}>Todos</button>
+                                            <button onClick={() => setReviewFilter('pending')} className={`px-2 py-1 text-[8px] font-black uppercase border ${reviewFilter === 'pending' ? 'bg-black text-white border-black' : 'bg-white text-gray-400 border-gray-100'}`}>Críticos</button>
+                                        </div>
                                     </div>
-                                ) : (
-                                    filteredReviews.map((r) => (
-                                        <div key={r.id} className="bg-white p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden rounded-sm">
-                                            {r.status === 'pending_resolution' && <div className="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>}
-                                            
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="space-y-2 flex-1">
-                                                    <div className="bg-gray-900 text-white p-3 rounded-sm inline-block w-full sm:w-auto">
-                                                        <h3 className="text-base font-black uppercase tracking-tight leading-none mb-2">{r.userInfo.name}</h3>
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <span className="flex items-center gap-2 text-[11px] font-bold opacity-90"><Mail size={12} className="text-orange-400" /> {r.userInfo.email}</span>
-                                                            {r.contactInfo && <span className="flex items-center gap-2 text-[11px] font-bold opacity-90"><MessageSquare size={12} className="text-orange-400" /> {r.contactInfo}</span>}
+
+                                    <div className="space-y-4">
+                                        {filteredReviews.length === 0 ? (
+                                            <div className="py-12 text-center border-2 border-dashed border-gray-50">
+                                                <p className="text-[9px] text-gray-400 uppercase font-bold">Nenhum feedback</p>
+                                            </div>
+                                        ) : (
+                                            filteredReviews.map((r) => (
+                                                <div key={r.id} className="bg-white p-4 border border-gray-100 relative overflow-hidden rounded-sm hover:border-gray-300 transition-colors">
+                                                    {r.status === 'pending_resolution' && <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>}
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div className="bg-gray-900 text-white p-2.5 rounded-sm flex-1 mr-4">
+                                                            <h3 className="text-xs font-black uppercase mb-1">{r.userInfo.name}</h3>
+                                                            <div className="flex flex-col gap-0.5 opacity-80">
+                                                                <span className="text-[9px] font-bold flex items-center gap-1"><Mail size={10} className="text-orange-400" /> {r.userInfo.email}</span>
+                                                                {r.contactInfo && <span className="text-[9px] font-bold flex items-center gap-1"><MessageSquare size={10} className="text-orange-400" /> {r.contactInfo}</span>}
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-black text-white px-2 py-1 rounded-sm flex items-center gap-1">
+                                                            <Star size={10} fill="currentColor" className="text-yellow-400" />
+                                                            <span className="text-[10px] font-black">{r.rating.toFixed(1)}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                                                        <span className="flex items-center gap-1"><Timer size={10} /> {new Date(r.timestamp).toLocaleString('pt-BR')}</span>
-                                                        {r.waiterId && <span className="flex items-center gap-1 text-orange-600"><Users size={10} /> Garçom: {waiters.find(w => w.id === r.waiterId)?.name || 'N/A'}</span>}
+                                                    <p className="text-[11px] text-gray-600 italic mb-3 leading-relaxed">"{r.comment || 'Sem comentário.'}"</p>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter">{new Date(r.timestamp).toLocaleString('pt-BR')}</span>
+                                                        {r.status === 'pending_resolution' && (
+                                                            <button onClick={() => markResolved(r.id)} className="text-[8px] font-black uppercase text-red-600 hover:underline">Resolver</button>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 bg-black text-white px-3 py-2 rounded-sm ml-4">
-                                                    <Star size={14} fill="currentColor" className="text-yellow-400" />
-                                                    <span className="text-sm font-black">{r.rating.toFixed(1)}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-gray-50 p-4 mb-4 border-l-2 border-gray-200">
-                                                <p className="text-xs text-gray-700 leading-relaxed font-medium italic">"{r.comment || 'O cliente não deixou um comentário por escrito.'}"</p>
-                                            </div>
-
-                                            <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                                                <div className="flex gap-2">
-                                                    <span className={`px-2 py-1 text-[9px] font-black uppercase tracking-widest rounded ${r.status === 'pending_resolution' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                                        {r.status === 'pending_resolution' ? 'Ação Necessária' : 'Finalizado'}
-                                                    </span>
-                                                    {r.category && <span className="px-2 py-1 bg-gray-100 text-gray-500 text-[9px] font-black uppercase tracking-widest rounded">{r.category}</span>}
-                                                </div>
-                                                {r.status === 'pending_resolution' && (
-                                                    <button 
-                                                        onClick={() => markResolved(r.id)}
-                                                        className="flex items-center gap-2 px-4 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors rounded-sm"
-                                                    >
-                                                        <CheckSquare size={12} /> Marcar como Resolvido
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
                             </div>
+                        )}
 
-                            <div className="space-y-8">
-                                <div className="bg-white p-8 border border-gray-200">
-                                    <h2 className="text-xs font-bold uppercase tracking-widest mb-6">Equipe de Garçons</h2>
+                        {/* Tab Content: Team */}
+                        {activeTab === 'team' && (
+                            <div className="space-y-6 animate-in fade-in duration-300">
+                                <div className="bg-white p-6 border border-gray-200">
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest mb-6">Gestão de Equipe</h2>
                                     <div className="flex gap-2 mb-6">
-                                        <Input placeholder="NOME DO GARÇOM" value={newWaiterName} onChange={(e: any) => setNewWaiterName(e.target.value)} />
-                                        <button onClick={handleAddWaiter} className="p-4 bg-black text-white hover:bg-gray-800"><Plus size={16} /></button>
+                                        <Input placeholder="NOME DO GARÇOM" value={newWaiterName} onChange={(e: any) => setNewWaiterName(e.target.value)} className="text-[10px]" />
+                                        <button onClick={handleAddWaiter} className="px-4 bg-black text-white hover:bg-gray-800"><Plus size={16} /></button>
                                     </div>
                                     <div className="space-y-3">
                                         {waiterStats.map((w) => (
                                             <div key={w.id} className={`group border rounded-md overflow-hidden transition-all ${selectedWaiterForHistory === w.id ? 'border-black ring-1 ring-black' : 'border-gray-100 hover:border-gray-300'}`}>
-                                                <div 
-                                                    className="flex justify-between items-center p-4 bg-white cursor-pointer active:bg-gray-50"
-                                                    onClick={() => setSelectedWaiterForHistory(selectedWaiterForHistory === w.id ? null : w.id)}
-                                                >
+                                                <div className="flex justify-between items-center p-4 bg-white cursor-pointer" onClick={() => setSelectedWaiterForHistory(selectedWaiterForHistory === w.id ? null : w.id)}>
                                                     <div className="flex-1">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <p className="text-xs font-bold uppercase text-black tracking-tight">{w.name}</p>
-                                                            <span className={`w-2 h-2 rounded-full ${w.active ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-                                                        </div>
+                                                        <p className="text-xs font-black uppercase text-black mb-1">{w.name}</p>
                                                         <div className="flex items-center gap-3">
-                                                            <p className="text-[10px] text-gray-500 font-medium">{w.count} avaliações</p>
-                                                            <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[10px] font-black text-black">
+                                                            <p className="text-[9px] text-gray-400 font-bold uppercase">{w.count} avaliações</p>
+                                                            <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[9px] font-black text-black">
                                                                 <Star size={10} fill="black" /> {w.avg}
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                                                        <button 
-                                                            onClick={() => {
-                                                                const url = `${window.location.origin}?t=${activeTenant.id}&wtr=${w.id}`;
-                                                                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
-                                                                window.open(qrUrl, '_blank');
-                                                            }} 
-                                                            className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                                                            title="Gerar QR Code"
-                                                        >
-                                                            <QrCode size={16} />
-                                                        </button>
-                                                        <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2.5 rounded-full transition-colors ${w.active ? 'text-green-600 hover:bg-green-50' : 'text-gray-300 hover:bg-gray-50'}`}><Power size={16} /></button>
-                                                        <button onClick={() => deleteWaiter(w.id)} className="p-2.5 text-gray-300 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"><Trash2 size={16} /></button>
+                                                    <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                                        <button onClick={() => {
+                                                            const url = `${window.location.origin}?t=${activeTenant.id}&wtr=${w.id}`;
+                                                            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+                                                            window.open(qrUrl, '_blank');
+                                                        }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"><QrCode size={16} /></button>
+                                                        <button onClick={() => toggleWaiterStatus(w.id)} className={`p-2 rounded-full ${w.active ? 'text-green-600' : 'text-gray-300'}`}><Power size={16} /></button>
+                                                        <button onClick={() => deleteWaiter(w.id)} className="p-2 text-gray-300 hover:text-red-600 rounded-full"><Trash2 size={16} /></button>
                                                     </div>
                                                 </div>
-                                                
                                                 {selectedWaiterForHistory === w.id && (
-                                                    <div className="bg-gray-50 p-3 border-t border-gray-100 max-h-48 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-                                                        <p className="text-[8px] font-black text-gray-400 uppercase mb-2 tracking-widest">Histórico Recente</p>
+                                                    <div className="bg-gray-50 p-4 border-t border-gray-100 max-h-60 overflow-y-auto">
+                                                        <p className="text-[8px] font-black text-gray-400 uppercase mb-3 tracking-widest">Histórico do Garçom</p>
                                                         {w.reviews.length === 0 ? (
-                                                            <p className="text-[9px] text-gray-400 italic">Nenhuma avaliação ainda.</p>
+                                                            <p className="text-[9px] text-gray-400 italic">Sem avaliações.</p>
                                                         ) : (
                                                             w.reviews.map((rev: any) => (
-                                                                <div key={rev.id} className="mb-2 pb-2 border-b border-gray-200 last:border-0">
+                                                                <div key={rev.id} className="mb-3 pb-3 border-b border-gray-200 last:border-0">
                                                                     <div className="flex justify-between items-center mb-1">
-                                                                        <span className="text-[9px] font-bold text-gray-700">{rev.userInfo.name}</span>
-                                                                        <div className="flex items-center gap-1">
+                                                                        <span className="text-[10px] font-black text-gray-800 uppercase">{rev.userInfo.name}</span>
+                                                                        <div className="flex items-center gap-1 bg-white px-1.5 py-0.5 rounded border border-gray-200">
                                                                             <Star size={8} fill="black" />
                                                                             <span className="text-[9px] font-black">{rev.rating}</span>
                                                                         </div>
                                                                     </div>
-                                                                    {rev.comment && <p className="text-[9px] text-gray-500 leading-tight italic">"{rev.comment}"</p>}
+                                                                    {rev.comment && <p className="text-[10px] text-gray-500 leading-tight italic">"{rev.comment}"</p>}
                                                                 </div>
                                                             ))
                                                         )}
@@ -808,19 +787,57 @@ export default function App() {
                                         ))}
                                     </div>
                                 </div>
+                            </div>
+                        )}
 
-                                <div className="bg-white p-8 border border-gray-200">
-                                    <h2 className="text-xs font-bold uppercase tracking-widest mb-6">Configurações</h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-[9px] font-bold text-gray-400 uppercase block mb-2">Link Google Reviews</label>
-                                            <Input value={settingsLink} onChange={(e: any) => setSettingsLink(e.target.value)} />
+                        {/* Tab Content: Reputation */}
+                        {activeTab === 'reputation' && (
+                            <div className="space-y-6 animate-in fade-in duration-300">
+                                <div className="bg-red-600 text-white p-6 rounded-sm shadow-lg">
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-80">Proteção de Reputação</h2>
+                                    <p className="text-4xl font-black mb-1">{reviews.filter(r => r.status === 'pending_resolution').length}</p>
+                                    <p className="text-[10px] font-bold uppercase opacity-70">Críticas negativas interceptadas e não publicadas no Google</p>
+                                </div>
+
+                                <div className="bg-white p-6 border border-gray-200">
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest mb-6">Análise de Impacto</h2>
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-end border-b border-gray-100 pb-4">
+                                            <div>
+                                                <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Engajamento Gerado</p>
+                                                <p className="text-xl font-black text-black">{reviews.length} Clientes</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Média Protegida</p>
+                                                <p className="text-xl font-black text-green-600">{(reviews.filter(r => r.status !== 'pending_resolution').reduce((acc, r) => acc + r.rating, 0) / (reviews.filter(r => r.status !== 'pending_resolution').length || 1)).toFixed(1)} ★</p>
+                                            </div>
                                         </div>
-                                        <Button onClick={handleSaveSettings} className="w-full py-3">Salvar Alterações</Button>
+                                        <div className="bg-gray-50 p-4 rounded-sm">
+                                            <p className="text-[10px] font-bold text-gray-600 leading-relaxed">
+                                                O Reviu evitou que <span className="font-black text-black">{reviews.filter(r => r.status === 'pending_resolution').length} potenciais avaliações de 1 ou 2 estrelas</span> fossem publicadas em plataformas abertas, permitindo que você resolvesse o problema internamente e mantivesse sua nota alta.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Tab Content: Settings */}
+                        {activeTab === 'settings' && (
+                            <div className="space-y-6 animate-in fade-in duration-300">
+                                <div className="bg-white p-6 border border-gray-200">
+                                    <h2 className="text-[10px] font-black uppercase tracking-widest mb-6">Configurações do Estabelecimento</h2>
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="text-[9px] font-black uppercase text-gray-400 block mb-2">Link do Google Reviews (Obrigatório)</label>
+                                            <Input value={settingsLink} onChange={(e: any) => setSettingsLink(e.target.value)} placeholder="https://g.page/r/..." className="text-xs" />
+                                            <p className="text-[8px] text-gray-400 mt-2 uppercase font-bold">Este link será usado para redirecionar clientes que derem notas altas.</p>
+                                        </div>
+                                        <Button onClick={handleSaveSettings} className="w-full py-4 text-[10px] font-black uppercase tracking-widest">Salvar Todas as Alterações</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )
