@@ -14,9 +14,17 @@ export const DB = {
   },
 
   getTenants: async (): Promise<Tenant[]> => {
-    const { data, error } = await supabase.from('tenants').select('*');
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase.from('tenants').select('*');
+      if (error) {
+        console.error('Erro ao buscar tenants:', error);
+        return [];
+      }
+      return data || [];
+    } catch (e) {
+      console.error('Exceção ao buscar tenants:', e);
+      return [];
+    }
   },
 
   saveTenant: async (tenant: Tenant): Promise<Tenant[]> => {
@@ -27,12 +35,20 @@ export const DB = {
 
   getWaiters: async (): Promise<Waiter[]> => {
     if (!currentTenantId) return [];
-    const { data, error } = await supabase
-      .from('waiters')
-      .select('*')
-      .eq('tenantId', currentTenantId);
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('waiters')
+        .select('*')
+        .eq('tenantId', currentTenantId);
+      if (error) {
+        console.error('Erro ao buscar waiters:', error);
+        return [];
+      }
+      return data || [];
+    } catch (e) {
+      console.error('Exceção ao buscar waiters:', e);
+      return [];
+    }
   },
 
   saveWaiter: async (waiter: Waiter): Promise<Waiter[]> => {
@@ -49,13 +65,21 @@ export const DB = {
 
   getReviews: async (): Promise<Review[]> => {
     if (!currentTenantId) return [];
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('*')
-      .eq('tenantId', currentTenantId)
-      .order('timestamp', { ascending: false });
-    if (error) throw error;
-    return data || [];
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('tenantId', currentTenantId)
+        .order('timestamp', { ascending: false });
+      if (error) {
+        console.error('Erro ao buscar reviews:', error);
+        return [];
+      }
+      return data || [];
+    } catch (e) {
+      console.error('Exceção ao buscar reviews:', e);
+      return [];
+    }
   },
 
   addReview: async (review: Review): Promise<void> => {

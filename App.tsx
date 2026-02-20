@@ -362,10 +362,11 @@ export default function App() {
 
   const initApp = async () => {
       setIsLoadingApp(true);
-      const allTenants = await DB.getTenants();
-      setTenants(allTenants);
+      try {
+          const allTenants = await DB.getTenants();
+          setTenants(allTenants);
 
-      const params = new URLSearchParams(window.location.search);
+          const params = new URLSearchParams(window.location.search);
       const tenantId = params.get('t');
       const mode = params.get('m'); // 'manager' or 'customer'
 
@@ -390,8 +391,12 @@ export default function App() {
       } else {
           setAppMode('landing');
       }
-      
-      setIsLoadingApp(false);
+      } catch (error) {
+          console.error("Erro na inicialização:", error);
+          setAppMode('landing');
+      } finally {
+          setIsLoadingApp(false);
+      }
   };
 
   // --- NAVIGATION HANDLERS ---
